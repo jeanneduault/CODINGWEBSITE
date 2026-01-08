@@ -1,0 +1,106 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPZiXC/xd7lHJxghOVnCgrj",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/jeanneduault/CODINGWEBSITE/blob/main/Clean_data_file_2\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "def clean_adhd_dataset(input_path, output_filename):\n",
+        "    \"\"\"\n",
+        "    Performs data wrangling and harmonization on raw ADHD intervention data.\n",
+        "    Transitions raw extracted values into a standardized format for analysis.\n",
+        "    \"\"\"\n",
+        "    # 1. Load raw data (skipping the title row present in your raw CSV files)\n",
+        "    # The script reads directly from the raw source\n",
+        "    df = pd.read_csv(input_path, skiprows=1)\n",
+        "\n",
+        "    # 2. Basic cleanup of column headers (removing potential white spaces)\n",
+        "    df.columns = df.columns.str.strip()\n",
+        "\n",
+        "    # 3. Define the structural mapping\n",
+        "    # This step selects only the columns required for the final website dashboard\n",
+        "    # Note: Technical columns like 'FU_months' or 'metric' are intentionally excluded\n",
+        "    required_columns = [\n",
+        "        'source', 'method', 'study_design', 'outcome_domain', 'outcome_name',\n",
+        "        'rater', 'instrument', 'effect_type', 'timepoint', 'effect_value',\n",
+        "        'CI_low', 'CI_high', 'p_value', 'N_treat', 'N_ctrl', 'time_category', 'notes'\n",
+        "    ]\n",
+        "\n",
+        "    # Filtering the dataframe to keep only the clinical parameters\n",
+        "    df_standardized = df[required_columns].copy()\n",
+        "\n",
+        "    # 4. Data Type Normalization\n",
+        "    # Converting effect sizes and sample sizes to numeric types to ensure analytical readiness\n",
+        "    numeric_columns = ['effect_value', 'CI_low', 'CI_high', 'N_treat', 'N_ctrl']\n",
+        "    for col in numeric_columns:\n",
+        "        df_standardized[col] = pd.to_numeric(df_standardized[col], errors='coerce')\n",
+        "\n",
+        "    # 5. Export formatted CSV\n",
+        "    # Re-inserting the specific header name on the first line to match the project's requirements\n",
+        "    with open(output_filename, 'w', encoding='utf-8') as f:\n",
+        "        f.write(f\"{output_filename.replace('.csv', '')}\\n\")\n",
+        "        df_standardized.to_csv(f, index=False)\n",
+        "\n",
+        "    print(f\"Transformation complete: {input_path} -> {output_filename}\")\n",
+        "\n",
+        "# --- MAIN EXECUTION PIPELINE ---\n",
+        "\n",
+        "# Step 1: Process Post-Treatment data\n",
+        "clean_adhd_dataset(\n",
+        "    input_path='ADHD_NFB_MBI_POST_TREATMENT_raw.csv',\n",
+        "    output_filename='POST_TREATMENT_clean_final.csv'\n",
+        ")\n",
+        "\n",
+        "# Step 2: Process Follow-Up data\n",
+        "clean_adhd_dataset(\n",
+        "    input_path='ADHD_NFB_MBI_FOLLOW_UP_raw.csv',\n",
+        "    output_filename='FOLLOW_UP_6_13M_clean_final.csv'\n",
+        ")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "a93aUaEySu_G",
+        "outputId": "bf13abc7-40d6-4ee1-c2d4-bbe32f0710f5"
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Transformation complete: ADHD_NFB_MBI_POST_TREATMENT_raw.csv -> POST_TREATMENT_clean_final.csv\n",
+            "Transformation complete: ADHD_NFB_MBI_FOLLOW_UP_raw.csv -> FOLLOW_UP_6_13M_clean_final.csv\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
